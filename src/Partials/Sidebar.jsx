@@ -65,7 +65,8 @@ const Sidebar = ({ isDarkMode, setIsDarkMode, isOpen, setIsOpen }) => {
 
     useEffect(() => {
         const fetchUserEmail = async () => {
-            setUserEmail('admin@gmail.com');
+            const response = servicesAuth.verifyToken(token)
+            setUserEmail(response.data.email);
         };
         fetchUserEmail();
     }, []);
