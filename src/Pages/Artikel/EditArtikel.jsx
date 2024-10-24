@@ -89,7 +89,6 @@ const EditArtikel = ({ isDarkMode }) => {
         const formData = new FormData();
         const isImageChanged = articleData.image !== initialData.image;
 
-        // Check if any field has changed before updating
         if (articleData.title !== initialData.title) {
             formData.append('title', articleData.title);
             formData.append('slug', articleData.slug);
@@ -110,7 +109,7 @@ const EditArtikel = ({ isDarkMode }) => {
                 const response = await servicesArtikel.update(token, id, formData);
                 console.log("API Response:", response);
                 showAlertSuccessMessage('Data berhasil diperbarui!');
-                setInitialData(articleData); // Reset initial data
+                setInitialData(articleData);
             } catch (error) {
                 console.error("Error updating article:", error);
                 showAlertFailedMessage(error.message || 'Failed to update article');
@@ -214,7 +213,7 @@ const EditArtikel = ({ isDarkMode }) => {
                         </button>
                         {articleData.image && (
                             <img
-                                src={typeof articleData.image === 'string' ? STORAGE_URL + articleData.image : URL.createObjectURL(articleData.image)}
+                                src={typeof articleData.image === 'string' ? STORAGE_URL + 'artikel_images/' + articleData.image : URL.createObjectURL(articleData.image)}
                                 alt="Preview"
                                 className="mt-2 max-w-xs max-h-32 object-contain"
                             />

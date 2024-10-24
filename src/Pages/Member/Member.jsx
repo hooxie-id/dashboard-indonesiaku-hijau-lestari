@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { PlusCircle, X } from 'lucide-react';
 import { Alert, Dialog } from '../../Components/Alert';
 import { getClassNames } from '../../Components/Constant';
-import servicesArtikel from '../../Api/serviceArtikel';
+import servicesMember from '../../Api/serviceMember';
 import { token } from '../../Components/Constant';
 import { useNavigate } from 'react-router-dom';
 import { STORAGE_URL } from '../../Config/config';
 
-const Artikel = ({ isDarkMode }) => {
+const Member = ({ isDarkMode }) => {
     const navigate = useNavigate();
     const [entries, setEntries] = useState(5);
     const [showImagePopup, setShowImagePopup] = useState(false);
@@ -16,20 +16,20 @@ const Artikel = ({ isDarkMode }) => {
     const [alertMessage, setAlertMessage] = useState('');
     const [showDialog, setShowDialog] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
-    const [articles, setArticles] = useState([]);
+    const [members, setMembers] = useState([]);
     const classNames = getClassNames(isDarkMode);
 
     useEffect(() => {
-        fetchArticles();
+        fetchMembers();
     }, []);
 
-    const fetchArticles = async () => {
+    const fetchMembers = async () => {
         try {
-            const response = await servicesArtikel.getAll(token);
+            const response = await servicesMember.getAll(token);
             console.log(response);
-            setArticles(response.data);
+            setMembers(response.data);
         } catch (error) {
-            console.error('Error fetching articles:', error);
+            console.error('Error fetching members:', error);
         }
     };
 
@@ -44,11 +44,11 @@ const Artikel = ({ isDarkMode }) => {
     };
 
     const handleAddClick = () => {
-        navigate('/artikel/add');
+        navigate('/member/add');
     };
 
     const handleEdit = (id) => {
-        navigate(`/artikel/edit/${id}`);
+        navigate(`/member/edit/${id}`);
     };
 
     const handleDelete = (id) => {
@@ -58,11 +58,11 @@ const Artikel = ({ isDarkMode }) => {
 
     const confirmDelete = async () => {
         try {
-            await servicesArtikel.delete(token, itemToDelete);
-            setArticles(articles.filter(article => article.id !== itemToDelete));
-            console.log("Article deleted successfully");
+            await servicesMember.delete(token, itemToDelete);
+            setMembers(members.filter(member => member.id !== itemToDelete));
+            console.log("Member deleted successfully");
         } catch (error) {
-            console.error('Error deleting the article:', error);
+            console.error('Error deleting the member:', error);
         }
         setShowDialog(false);
         showAlertMessage('Data berhasil dihapus!');
@@ -72,11 +72,6 @@ const Artikel = ({ isDarkMode }) => {
         setAlertMessage(message);
         setShowAlert(true);
         setTimeout(() => setShowAlert(false), 3000);
-    };
-
-    const formatDate = (dateString) => {
-        const options = { day: 'numeric', month: 'long', year: 'numeric' };
-        return new Date(dateString).toLocaleDateString('id-ID', options);
     };
 
     return (
@@ -110,8 +105,8 @@ const Artikel = ({ isDarkMode }) => {
                 </div>
             )}
 
-            <h1 className="text-4xl font-bold mb-2">Artikel</h1>
-            <h2 className="text-2xl font-semibold mb-6">Artikel</h2>
+            <h1 className="text-4xl font-bold mb-2">Member</h1>
+            <h2 className="text-2xl font-semibold mb-6">Daftar Member</h2>
 
             <div className="mb-4 flex items-center">
                 <span className="mr-2">Tampilkan</span>
@@ -132,42 +127,42 @@ const Artikel = ({ isDarkMode }) => {
                     <thead>
                         <tr className="border border-gray-700">
                             <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[5%]">No</th>
-                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[13%]">Waktu Tambah/Edit</th>
-                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[12%]">Judul</th>
-                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[12%]">Gambar</th>
-                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[12%]">Content</th>
-                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[12%]">Slug</th>
-                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[13%]">Aksi</th>
+                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[20%]">Nama</th>
+                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[15%]">Jabatan</th>
+                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[15%]">KTA</th>
+                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[15%]">Wilayah</th>
+                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[10%]">Status</th>
+                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[10%]">Gambar</th>
+                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[10%]">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {articles.slice(0, entries).map((article, index) => (
-                            <tr key={article.id}>
+                        {members.slice(0, entries).map((member, index) => (
+                            <tr key={member.id}>
                                 <td className="py-2 px-2 text-center">{index + 1}</td>
-                                <td className="py-2 px-2 text-center">{formatDate(article.created_at)}</td>
-                                <td className="py-2 px-2 text-center">{article.title}</td>
+                                <td className="py-2 px-2 text-center">{member.nama}</td>
+                                <td className="py-2 px-2 text-center">{member.jabatan}</td>
+                                <td className="py-2 px-2 text-center">{member.kta}</td>
+                                <td className="py-2 px-2 text-center">{member.wilayah}</td>
+                                <td className="py-2 px-2 text-center">{member.status}</td>
                                 <td className="py-2 px-2 text-center">
                                     <button
-                                        onClick={() => handleImageClick(STORAGE_URL + 'artikel_images/' + article.image)}
+                                        onClick={() => handleImageClick(STORAGE_URL + 'member_images/'+ member.image)}
                                         className={`${classNames.buttonBgColor} ${classNames.textColor} px-4 py-1.5 rounded hover:bg-opacity-80 transition-colors duration-200 flex items-center justify-center mx-auto text-sm`}
                                     >
                                         Lihat
                                     </button>
                                 </td>
                                 <td className="py-2 px-2 text-center">
-                                    {article.content.length > 12 ? `${article.content.slice(0, 12)}...` : article.content}
-                                </td>
-                                <td className="py-2 px-2 text-center">{article.slug}</td>
-                                <td className="py-2 px-2 text-center">
                                     <button
-                                        onClick={() => handleEdit(article.id)}
+                                        onClick={() => handleEdit(member.id)}
                                         className={`${classNames.buttonBgColor} ${classNames.textColor} hover:bg-yellow-500 hover:bg-opacity-50 px-3 py-1 rounded mr-2 text-xs`}
                                     >
                                         <span className='mr-1'>📝</span>
                                         Edit
                                     </button>
                                     <button
-                                        onClick={() => handleDelete(article.id)}
+                                        onClick={() => handleDelete(member.id)}
                                         className={`${classNames.buttonBgColor} ${classNames.textColor} hover:bg-yellow-500 hover:bg-opacity-50 px-3 py-1 rounded text-xs`}
                                     >
                                         <span className='mr-1'>❌</span>
@@ -185,10 +180,10 @@ const Artikel = ({ isDarkMode }) => {
                 className={`${classNames.buttonBgColor} ${classNames.textColor} py-2 px-4 flex items-center hover:bg-yellow-500 hover:bg-opacity-50 rounded-full`}
             >
                 <PlusCircle size={20} className="mr-2" />
-                Tambah Artikel
+                Tambah Member
             </button>
         </div>
     );
 };
 
-export default Artikel;
+export default Member;

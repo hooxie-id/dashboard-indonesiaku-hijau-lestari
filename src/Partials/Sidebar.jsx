@@ -2,14 +2,17 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, UserCircle, LogOut } from 'lucide-react';
 import { BsLayoutSidebarReverse } from 'react-icons/bs';
 import { IoMoonOutline, IoSunnyOutline } from 'react-icons/io5';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogoutConfirmationAlert, LogoutSuccessAlert } from '../Components/Alert';
+import servicesAuth from '../Api/serviceAuth';
+import { token } from '../Components/Constant';
 
 const Sidebar = ({ isDarkMode, setIsDarkMode, isOpen, setIsOpen }) => {
     const [userEmail, setUserEmail] = useState('admin@gmail.com');
     const [showLogout, setShowLogout] = useState(false);
     const [showLogoutAlert, setShowLogoutAlert] = useState(false);
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+    const [message, setMessage] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [isAutoOpened, setIsAutoOpened] = useState(false);
     const location = useLocation();
@@ -29,6 +32,7 @@ const Sidebar = ({ isDarkMode, setIsDarkMode, isOpen, setIsOpen }) => {
     const hoverBgColor = isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100';
     const activeBgColor = isDarkMode ? 'bg-gray-800' : 'bg-gray-200';
     const sidebarIconClose = isDarkMode ? 'bg-gray-800' : 'bg-gray-200';
+    const navigate = useNavigate();
 
     const renderMenuItem = (to, icon, text = false) => {
         const isActive = to && isActiveRoute(to);
@@ -101,9 +105,22 @@ const Sidebar = ({ isDarkMode, setIsDarkMode, isOpen, setIsOpen }) => {
         setShowLogout(false);
     };
 
-    const confirmLogout = () => {
-        setShowLogoutAlert(false);
-        setShowSuccessAlert(true);
+    const confirmLogout = async (e) => {
+        e.preventDefault();
+
+        try {
+            await servicesAuth.logout(token);
+            localStorage.clear();
+            setShowSuccessAlert(true);
+            setShowLogoutAlert(false);
+            setMessage('Logout successful');
+
+            navigate('/');
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || error.message || 'An error occurred during logout. Please try again.';
+            setMessage(errorMessage);
+            setShowLogoutAlert(false);
+        }
     };
 
     const cancelLogout = () => {
@@ -112,8 +129,6 @@ const Sidebar = ({ isDarkMode, setIsDarkMode, isOpen, setIsOpen }) => {
 
     const handleSuccessClose = () => {
         setShowSuccessAlert(false);
-        alert('User logged out');
-        console.log("User logged out");
     };
 
     const isActiveRoute = (path) => location.pathname === path;
@@ -165,6 +180,13 @@ const Sidebar = ({ isDarkMode, setIsDarkMode, isOpen, setIsOpen }) => {
                                 {filteredMenuItems.map((item) => renderMenuItem(item.to, item.icon, item.text))}
                             </ul>
                         </nav>
+                    </div>
+                    <div className='p-4'>
+                    {message && (
+                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                            <span className="block sm:inline">{message}</span>
+                        </div>
+                    )}
                     </div>
                     <div className="p-4 mt-auto flex items-center justify-between space-x-2">
                         <div className="relative flex-grow" ref={profileRef}>

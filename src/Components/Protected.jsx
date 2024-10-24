@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import servicesAuth from "../Api/serviceAuth";
 import { Navigate, Outlet } from "react-router-dom";
-import { token } from "./Constant";
 
 const Protected = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(null);
 
     useEffect(() => {
         const checkAuth = async () => {
+            const token = localStorage.getItem('token');
             if (!token) {
                 setIsAuthenticated(false);
                 return;
@@ -35,11 +35,9 @@ const Protected = () => {
     }
 
     return isAuthenticated ? (
-      <Outlet />
+        <Outlet />
     ) : (
-      <Navigate
-        to={`/?error=You must log in to access this page.`}
-      />
+        <Navigate to={`/?error=You must log in to access this page.`} />
     );
 };
 

@@ -20,12 +20,6 @@ const Login = () => {
     const [errorMessage, setErrorMessage] = useState(queryParams.get('error'));
 
     useEffect(() => {
-        if (errorMessage) {
-            navigate('/', { replace: true });
-        }
-    }, [errorMessage, navigate]);
-
-    useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
             servicesAuth.verifyToken(token)
@@ -36,7 +30,15 @@ const Login = () => {
                     localStorage.removeItem('token');
                 });
         }
+    }, []);
 
+    useEffect(() => {
+        if (errorMessage) {
+            navigate('/', { replace: true });
+        }
+    }, [errorMessage, navigate]);
+
+    useEffect(() => {
         if (errorMessage) {
             const interval = setInterval(() => {
                 setCountdown((prevCountdown) => Math.max(prevCountdown - 100, 0));
@@ -66,15 +68,16 @@ const Login = () => {
                 localStorage.setItem('token', response.data.token);
                 setSuccessMessage('Login successful! Redirecting to dashboard...');
                 setTimeout(() => {
-                    setIsLoggedIn(true);
+                    navigate('/home');
                 }, 2000);
             } else {
                 setErrorMessage('Login failed. No token provided.');
             }
         } catch (error) {
-            if (error.password || error.email) {
-                if (error.email) setEmailError(error.email[0]);
-                if (error.password) setPasswordError(error.password[0]);
+            if (error.response?.data) {
+                const errorData = error.response.data;
+                setEmailError(errorData.email || '');
+                setPasswordError(errorData.password || '');
             } else {
                 setErrorMessage('Invalid credentials');
             }
