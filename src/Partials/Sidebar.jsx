@@ -154,11 +154,9 @@ const Sidebar = ({ isDarkMode, setIsDarkMode, isOpen, setIsOpen }) => {
                     <div className="p-4 flex-grow overflow-hidden">
                         <div className="flex justify-between items-center mb-4">
                             <div className="overflow-hidden w-36">
-                                <img
-                                    className="w-36"
-                                    src={isDarkMode ? '/assets/images/logo-dishub.png' : '/assets/images/logo-black.png'}
-                                    alt="DISHUB SITUBONDO"
-                                />
+                                <span className="text-left block w-36 font-extrabold">
+                                    INDONESIAKU HIJAU LESTARI
+                                </span>
                             </div>
                             <BsLayoutSidebarReverse
                                 className="text-xl cursor-pointer"

@@ -175,7 +175,9 @@ const Login = () => {
                 </form>
             </div>
             <div className="hidden w-1/2 md:flex items-center justify-center bg-cover bg-center bg-[#111D29]">
-                <img className='w-96' src="assets/images/logo-dishub.png" alt="Dishub Logo" />
+                <span className="text-white text-3xl font-extrabold">
+                    INDONESIAKU HIJAU LESTARI
+                </span>
             </div>
         </div>
     );
