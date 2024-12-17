@@ -65,8 +65,10 @@ const Sidebar = ({ isDarkMode, setIsDarkMode, isOpen, setIsOpen }) => {
 
     useEffect(() => {
         const fetchUserEmail = async () => {
-            const response = servicesAuth.verifyToken(token)
-            setUserEmail(response.data.email);
+            const response = await servicesAuth.verifyToken(token);
+            if (response?.data?.email) {
+                setUserEmail(response.data.email);
+            }
         };
         fetchUserEmail();
     }, []);
@@ -194,7 +196,12 @@ const Sidebar = ({ isDarkMode, setIsDarkMode, isOpen, setIsOpen }) => {
                                 onClick={() => setShowLogout(!showLogout)}
                             >
                                 <UserCircle className={`h-5 w-5 mr-2 ${isDarkMode ? 'text-white' : 'text-black'}`} />
-                                <span className={`text-sm ${isDarkMode ? 'text-white' : 'text-black'}`}>{userEmail}</span>
+                                <span
+                                    className={`text-sm ${isDarkMode ? 'text-white' : 'text-black'}`}
+                                    title={userEmail}
+                                >
+                                    {userEmail.length > 12 ? `${userEmail.slice(0, 12)}...` : userEmail}
+                                </span>
                             </button>
                             {showLogout && (
                                 <button

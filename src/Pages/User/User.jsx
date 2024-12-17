@@ -2,18 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { Alert, Dialog } from '../../Components/Alert';
 import { getClassNames } from '../../Components/Constant';
-import servicesUser from '../../Api/serviceUser'; // Renamed to servicesUser
+import servicesUser from '../../Api/serviceUser';
 import { token } from '../../Components/Constant';
 import { useNavigate } from 'react-router-dom';
 
 const User = ({ isDarkMode }) => {
     const navigate = useNavigate();
     const [entries, setEntries] = useState(5);
+    const [currentPage, setCurrentPage] = useState(1);
     const [showAlert, setShowAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
     const [showDialog, setShowDialog] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
-    const [users, setUsers] = useState([]); // Changed to users
+    const [users, setUsers] = useState([]);
+    const [searchTerm, setSearchTerm] = useState(''); // For search
     const classNames = getClassNames(isDarkMode);
 
     useEffect(() => {
@@ -23,7 +25,6 @@ const User = ({ isDarkMode }) => {
     const fetchUsers = async () => {
         try {
             const response = await servicesUser.getAll(token);
-            console.log(response);
             setUsers(response.data);
         } catch (error) {
             console.error('Error fetching users:', error);
@@ -31,11 +32,11 @@ const User = ({ isDarkMode }) => {
     };
 
     const handleAddClick = () => {
-        navigate('/user/add'); // Updated to /user
+        navigate('/user/add');
     };
 
     const handleEdit = (id) => {
-        navigate(`/user/edit/${id}`); // Updated to /user
+        navigate(`/user/edit/${id}`);
     };
 
     const handleDelete = (id) => {
@@ -45,14 +46,13 @@ const User = ({ isDarkMode }) => {
 
     const confirmDelete = async () => {
         try {
-            await servicesUser.delete(token, itemToDelete); // Renamed to servicesUser
-            setUsers(users.filter(user => user.id !== itemToDelete)); // Updated to users
-            console.log("User deleted successfully");
+            await servicesUser.delete(token, itemToDelete);
+            setUsers(users.filter(user => user.id !== itemToDelete));
+            showAlertMessage('Data berhasil dihapus!');
         } catch (error) {
             console.error('Error deleting the user:', error);
         }
         setShowDialog(false);
-        showAlertMessage('Data berhasil dihapus!');
     };
 
     const showAlertMessage = (message) => {
@@ -65,6 +65,16 @@ const User = ({ isDarkMode }) => {
         const options = { day: 'numeric', month: 'long', year: 'numeric' };
         return new Date(dateString).toLocaleDateString('id-ID', options);
     };
+
+    // Pagination logic
+    const indexOfLastUser = currentPage * entries;
+    const indexOfFirstUser = indexOfLastUser - entries;
+    const filteredUsers = users.filter(user =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+    const totalPages = Math.ceil(filteredUsers.length / entries);
 
     return (
         <div className={`${classNames.bgColor} ${classNames.textColor} p-6 min-h-screen relative`}>
@@ -80,52 +90,68 @@ const User = ({ isDarkMode }) => {
             <h1 className="text-4xl font-bold mb-2">User</h1>
             <h2 className="text-2xl font-semibold mb-6">Daftar User</h2>
 
-            <div className="mb-4 flex items-center">
-                <span className="mr-2">Tampilkan</span>
-                <select
-                    className={`${classNames.bgColor} ${classNames.textColor} p-2 rounded`}
-                    value={entries}
-                    onChange={(e) => setEntries(Number(e.target.value))}
-                >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={15}>15</option>
-                </select>
-                <span className="ml-2">entri</span>
+            {/* Search and Entries Selector */}
+            <div className="flex justify-between items-center mb-4">
+                <div>
+                    <span className="mr-2">Tampilkan</span>
+                    <select
+                        className={`${classNames.bgColor} ${classNames.textColor} p-2 rounded`}
+                        value={entries}
+                        onChange={(e) => {
+                            setEntries(Number(e.target.value));
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={15}>15</option>
+                    </select>
+                    <span className="ml-2">entri</span>
+                </div>
+
+                <input
+                    type="text"
+                    placeholder="Cari nama atau email..."
+                    className={`p-2 rounded ${classNames.bgColor} ${classNames.textColor} border border-gray-300`}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
             </div>
 
+            {/* User Table */}
             <div className="overflow-x-auto">
-                <table className="w-full border-collapse mb-6">
-                    <thead>
-                        <tr className="border border-gray-700">
-                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[5%]">No</th>
-                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[30%]">Nama</th>
-                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[40%]">Email</th>
-                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[15%]">Created At</th>
-                            <th className="py-2 px-2 border border-gray-700 text-center font-normal w-[10%]">Aksi</th>
+                <table className="w-full border-collapse shadow-lg rounded-lg overflow-hidden mb-6">
+                    <thead className="bg-gray-800 text-white">
+                        <tr>
+                            <th className="py-3 px-4 text-center font-medium">No</th>
+                            <th className="py-3 px-4 text-center font-medium">Nama</th>
+                            <th className="py-3 px-4 text-center font-medium">Email</th>
+                            <th className="py-3 px-4 text-center font-medium">Created At</th>
+                            <th className="py-3 px-4 text-center font-medium">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {users.slice(0, entries).map((user, index) => (
-                            <tr key={user.id}>
-                                <td className="py-2 px-2 text-center">{index + 1}</td>
-                                <td className="py-2 px-2 text-center">{user.name}</td>
-                                <td className="py-2 px-2 text-center">{user.email}</td>
-                                <td className="py-2 px-2 text-center">{formatDate(user.created_at)}</td>
-                                <td className="py-2 px-2 text-center">
+                        {currentUsers.map((user, index) => (
+                            <tr
+                                key={user.id}
+                                className="border-b last:border-b-0 even:bg-gray-100 odd:bg-white hover:bg-yellow-100 transition-all duration-200"
+                            >
+                                <td className="py-3 px-4 text-center text-gray-700">{indexOfFirstUser + index + 1}</td>
+                                <td className="py-3 px-4 text-center text-gray-700">{user.name}</td>
+                                <td className="py-3 px-4 text-center text-gray-700">{user.email}</td>
+                                <td className="py-3 px-4 text-center text-gray-700">{formatDate(user.created_at)}</td>
+                                <td className="py-3 px-4 text-center">
                                     <button
                                         onClick={() => handleEdit(user.id)}
-                                        className={`${classNames.buttonBgColor} ${classNames.textColor} hover:bg-yellow-500 hover:bg-opacity-50 px-3 py-1 rounded mr-2 text-xs`}
+                                        className="text-blue-600 hover:text-blue-800 font-medium mr-3 transition duration-200"
                                     >
-                                        <span className='mr-1'>📝</span>
-                                        Edit
+                                        📝 Edit
                                     </button>
                                     <button
                                         onClick={() => handleDelete(user.id)}
-                                        className={`${classNames.buttonBgColor} ${classNames.textColor} hover:bg-yellow-500 hover:bg-opacity-50 px-3 py-1 rounded text-xs`}
+                                        className="text-red-600 hover:text-red-800 font-medium transition duration-200"
                                     >
-                                        <span className='mr-1'>❌</span>
-                                        Hapus
+                                        ❌ Hapus
                                     </button>
                                 </td>
                             </tr>
@@ -134,9 +160,39 @@ const User = ({ isDarkMode }) => {
                 </table>
             </div>
 
+            {/* Pagination */}
+            <div className="flex justify-center items-center mt-4">
+                <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`px-4 py-2 mx-1 rounded ${classNames.buttonBgColor} ${currentPage === 1 && 'opacity-50 cursor-not-allowed'}`}
+                >
+                    Previous
+                </button>
+
+                {[...Array(totalPages).keys()].map((page) => (
+                    <button
+                        key={page + 1}
+                        onClick={() => setCurrentPage(page + 1)}
+                        className={`px-4 py-2 mx-1 rounded ${currentPage === page + 1 ? 'bg-yellow-500 text-white' : classNames.buttonBgColor}`}
+                    >
+                        {page + 1}
+                    </button>
+                ))}
+
+                <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className={`px-4 py-2 mx-1 rounded ${classNames.buttonBgColor} ${currentPage === totalPages && 'opacity-50 cursor-not-allowed'}`}
+                >
+                    Next
+                </button>
+            </div>
+
+            {/* Add User Button */}
             <button
                 onClick={handleAddClick}
-                className={`${classNames.buttonBgColor} ${classNames.textColor} py-2 px-4 flex items-center hover:bg-yellow-500 hover:bg-opacity-50 rounded-full`}
+                className={`${classNames.buttonBgColor} ${classNames.textColor} py-2 px-4 flex items-center hover:bg-yellow-500 hover:bg-opacity-50 rounded-full mt-4`}
             >
                 <PlusCircle size={20} className="mr-2" />
                 Tambah User
