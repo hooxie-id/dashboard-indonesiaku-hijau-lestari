@@ -57,7 +57,20 @@ const servicesMember = {
     } catch (error) {
       throw error;
     }
-  }
+  },
+
+  updateOrder: async (token, orderedMembers) => {
+    try {
+        const response = await axios.put(`${API}/update/order`, { order: orderedMembers }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return response;
+    } catch (error) {
+        throw error;
+    }
+},
 };
 
 export default servicesMember;
